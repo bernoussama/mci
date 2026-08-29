@@ -21,9 +21,14 @@ describe("workflow executor", () => {
 
   it("rejects without sending to accounting", () => {
     const waiting = startRun(expenseWorkflow, { ...baseInput, amount: 640 });
+    const waitingEvent = waiting.events.find((item) => item.stepId === "approve");
     const rejected = decideRun(expenseWorkflow, waiting, "reject");
     expect(rejected.status).toBe("rejected");
     expect(rejected.events.some((item) => item.stepId === "accounting")).toBe(false);
+    expect(rejected.events.find((item) => item.stepId === "approve")).toMatchObject({
+      id: waitingEvent?.id,
+      detail: `${expenseWorkflow.approval.approverRole} rejected the expense.`,
+    });
     expect(decideRun(expenseWorkflow, rejected, "approve")).toBe(rejected);
   });
 });

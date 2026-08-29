@@ -16,11 +16,14 @@ export default function App() {
   const [compileStatus, setCompileStatus] = useState<"idle" | "loading" | "model" | "fallback">("idle");
   const [warning, setWarning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
   async function compile() {
     setCompileStatus("loading");
     setWarning(null);
     setRun(null);
+    setSelectedEventId(null);
 
     try {
       const result = await compileWorkflow(prompt);
@@ -38,8 +41,20 @@ export default function App() {
   }
 
   function submitExpense(input: WorkflowSubmission) {
-    setRun(startRun(spec, input));
+    const nextRun = startRun(spec, input);
+    setRun(nextRun);
+    setSelectedEventId(nextRun.events.at(-1)?.id ?? null);
     setActiveTab("trace");
+  }
+
+  function decide(decision: "approve" | "reject") {
+    setRun((current) => {
+      if (!current) return current;
+      const nextRun = decideRun(spec, current, decision);
+      const decisionEvent = nextRun.events.find((event) => event.stepId === "approve");
+      setSelectedEventId(decisionEvent?.id ?? nextRun.events.at(-1)?.id ?? null);
+      return nextRun;
+    });
   }
 
   return (
@@ -67,7 +82,15 @@ export default function App() {
             <div><span className="kicker">Workflow</span><h2>{spec.name}</h2></div>
             <span className="saved">{compileStatus === "fallback" ? "Fallback" : "Compiled"}</span>
           </div>
-          <WorkflowCanvas spec={spec} />
+          <WorkflowCanvas
+            spec={spec}
+            activeStepId={selectedEvent?.stepId ?? null}
+            availableStepIds={run?.events.map((event) => event.stepId) ?? []}
+            onSelectStep={(stepId) => {
+              const matchingEvent = run?.events.find((event) => event.stepId === stepId);
+              if (matchingEvent) setSelectedEventId(matchingEvent.id);
+            }}
+          />
         </div>
 
         <aside className="operation-panel">
@@ -92,7 +115,9 @@ export default function App() {
               <h2>{run ? "Latest execution" : "No runs yet"}</h2>
               <TracePanel
                 run={run}
-                onDecision={(decision) => setRun((current) => current ? decideRun(spec, current, decision) : current)}
+                selectedEventId={selectedEventId}
+                onSelectEvent={(event) => setSelectedEventId(event.id)}
+                onDecision={decide}
               />
             </div>
           )}
