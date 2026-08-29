@@ -10,7 +10,7 @@ The included expense approval demo covers one complete path:
 4. Smaller expenses go straight to accounting.
 5. The run trace records each decision.
 
-The current compiler and integrations are simulated on purpose. The starter proves the product loop without hiding it behind API setup.
+The compiler uses structured model output when an OpenAI key is configured and falls back to the checked-in workflow when it is not. Receipt extraction and the accounting handoff remain visibly simulated.
 
 ## Run it
 
@@ -53,11 +53,10 @@ src/
 └── App.tsx               orchestration state
 ```
 
-## Next cuts
+## Next steps
 
-- Replace the fixed compiler with a structured-output model call that validates against `WorkflowSpec`.
-- Render form fields from `spec.fields` instead of keeping the demo form inline.
 - Add durable run storage and resume manager approvals.
+- Replace simulated receipt extraction with OCR.
 - Connect one real accounting destination. Do not start with a catalog of integrations.
 
 ## License

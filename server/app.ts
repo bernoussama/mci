@@ -5,6 +5,11 @@ import { CompileRequestSchema } from "../shared/workflow-schema";
 
 export const app = new Hono();
 
+app.onError((_error, context) => context.json({
+  ok: false as const,
+  error: { code: "internal_error" as const, message: "The server could not complete the request." },
+}, 500));
+
 app.get("/api/health", (context) => context.json({
   ok: true,
   modelConfigured: Boolean(process.env.OPENAI_API_KEY),

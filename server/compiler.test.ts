@@ -82,6 +82,14 @@ describe("compileWorkflow", () => {
     expect(result).toMatchObject({ ok: true, source: "fallback" });
   });
 
+  it("falls back when structured output fails its schema", async () => {
+    const result = await compileWorkflow(
+      "Build the standard expense workflow.",
+      dependencies(async () => ({ name: "incomplete" }) as unknown as WorkflowDraft),
+    );
+    expect(result).toMatchObject({ ok: true, source: "fallback" });
+  });
+
   it("aborts a slow provider and falls back", async () => {
     const generateDraft = ({ abortSignal }: GenerateDraftInput) => new Promise<WorkflowDraft>((_resolve, reject) => {
       abortSignal.addEventListener("abort", () => reject(abortSignal.reason), { once: true });

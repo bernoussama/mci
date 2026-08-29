@@ -23,7 +23,10 @@ export function GeneratedForm({ spec, disabled, onSubmit }: GeneratedFormProps) 
     for (const field of spec.form.fields) {
       const value = data.get(field.id);
       if (field.type === "number") input[field.id] = Number(value);
-      else if (field.type === "file") input[field.id] = value instanceof File ? value.name : "";
+      else if (field.type === "file") {
+        const fileInput = event.currentTarget.elements.namedItem(field.id);
+        input[field.id] = fileInput instanceof HTMLInputElement ? fileInput.files?.[0]?.name ?? "" : "";
+      }
       else input[field.id] = String(value ?? "");
     }
 
