@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { expenseWorkflow, type WorkflowSpec } from "../shared/workflow-schema";
 import { GeneratedForm } from "./components/GeneratedForm";
+import { BusinessOnboarding } from "./components/BusinessOnboarding";
 import { TracePanel } from "./components/TracePanel";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
 import { decideRun, startRun, type WorkflowRun, type WorkflowSubmission } from "./domain/executor";
@@ -17,16 +18,22 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [submittedPrompt, setSubmittedPrompt] = useState(defaultPrompt);
+  const [entryScreen, setEntryScreen] = useState<"onboarding" | "prompt">("onboarding");
   const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
-  function compile() {
-    setSubmittedPrompt(prompt);
+  function compile(nextPrompt = prompt) {
+    setPrompt(nextPrompt);
+    setSubmittedPrompt(nextPrompt);
     setCompileStatus("demo");
     setSpec(expenseWorkflow);
     setWarning("Demo workflow loaded. No network required.");
     setRun(null);
     setSelectedEventId(null);
     setActiveTab("form");
+  }
+
+  if (compileStatus === "idle" && entryScreen === "onboarding") {
+    return <BusinessOnboarding onBuild={compile} onSkip={() => setEntryScreen("prompt")} />;
   }
 
   if (compileStatus === "idle") {
@@ -46,12 +53,13 @@ export default function App() {
             <p className="eyebrow">Operational software from one prompt</p>
             <h1>Describe the process.<br />MCI builds the workflow.</h1>
             <p>Generate the workflow, the form your team uses, and a trace for every decision.</p>
+            <button type="button" className="restart-discovery" onClick={() => setEntryScreen("onboarding")}>Find automation ideas</button>
           </div>
           <div className="landing-prompt">
             <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Workflow prompt" />
             <div className="landing-prompt-footer">
               <span>Expense approval workflow</span>
-              <button onClick={compile}>Generate workflow</button>
+              <button onClick={() => compile()}>Generate workflow</button>
             </div>
           </div>
         </section>
@@ -100,7 +108,7 @@ export default function App() {
         </div>
         <div className="chat-compose">
           <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Refine workflow prompt" />
-          <button onClick={compile} disabled={compileStatus === "loading"}>{compileStatus === "loading" ? "Working..." : "Send update"}</button>
+          <button onClick={() => compile()} disabled={compileStatus === "loading"}>{compileStatus === "loading" ? "Working..." : "Send update"}</button>
         </div>
       </aside>
 
