@@ -16,10 +16,22 @@ The current compiler and integrations are simulated on purpose. The starter prov
 
 ```bash
 pnpm install
+cp .env.example .env.local
 pnpm dev
 ```
 
 Open `http://localhost:5173`.
+
+Set `OPENAI_API_KEY` in `.env.local` to use the model compiler. Without it, the API returns the checked-in expense workflow so the demo still runs.
+
+To test the production-shaped local server:
+
+```bash
+pnpm build
+pnpm start
+```
+
+Open `http://localhost:8787`.
 
 ## Checks
 
@@ -32,12 +44,13 @@ pnpm build
 ## Project shape
 
 ```text
+server/                   local Hono API and model compiler
+shared/                   Zod contracts shared by browser and server
 src/
-├── domain/
-│   ├── workflow.ts       workflow schema, demo spec, and executor
-│   └── workflow.test.ts  routing tests
-├── App.tsx               prompt, canvas, generated form, and trace UI
-└── styles.css
+├── components/           canvas, generated form, and trace UI
+├── domain/               pure workflow executor
+├── services/             browser API client
+└── App.tsx               orchestration state
 ```
 
 ## Next cuts

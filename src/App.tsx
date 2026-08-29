@@ -1,28 +1,44 @@
-import { FormEvent, useState } from "react";
-import { executeExpenseWorkflow, expenseWorkflow, TraceEvent } from "./domain/workflow";
+import { useState } from "react";
+import { expenseWorkflow, type WorkflowSpec } from "../shared/workflow-schema";
+import { GeneratedForm } from "./components/GeneratedForm";
+import { TracePanel } from "./components/TracePanel";
+import { WorkflowCanvas } from "./components/WorkflowCanvas";
+import { decideRun, startRun, type WorkflowRun, type WorkflowSubmission } from "./domain/executor";
+import { compileWorkflow } from "./services/compiler-client";
 import "./styles.css";
 
 const defaultPrompt = "Build an expense approval workflow. Employees submit a receipt. Read the merchant and amount. Expenses above $500 need manager approval.";
 
 export default function App() {
   const [prompt, setPrompt] = useState(defaultPrompt);
-  const [trace, setTrace] = useState<TraceEvent[]>([]);
+  const [spec, setSpec] = useState<WorkflowSpec>(expenseWorkflow);
+  const [run, setRun] = useState<WorkflowRun | null>(null);
+  const [compileStatus, setCompileStatus] = useState<"idle" | "loading" | "model" | "fallback">("idle");
+  const [warning, setWarning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
-  const spec = expenseWorkflow;
 
-  function compile() {
-    setTrace([]);
-    setActiveTab("form");
+  async function compile() {
+    setCompileStatus("loading");
+    setWarning(null);
+    setRun(null);
+
+    try {
+      const result = await compileWorkflow(prompt);
+      if (!result.ok) throw new Error(result.error.message);
+      setSpec(result.spec);
+      setCompileStatus(result.source);
+      setWarning(result.warning);
+      setActiveTab("form");
+    } catch {
+      setSpec(expenseWorkflow);
+      setCompileStatus("fallback");
+      setWarning("API unavailable. Using the local demo workflow.");
+      setActiveTab("form");
+    }
   }
 
-  function submitExpense(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    setTrace(executeExpenseWorkflow(spec, {
-      employee: String(data.get("employee")),
-      merchant: String(data.get("merchant")),
-      amount: Number(data.get("amount")),
-    }));
+  function submitExpense(input: WorkflowSubmission) {
+    setRun(startRun(spec, input));
     setActiveTab("trace");
   }
 
@@ -38,28 +54,20 @@ export default function App() {
         <h1>Describe the process.<br />Get the workflow and its UI.</h1>
         <div className="prompt-box">
           <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Workflow prompt" />
-          <button onClick={compile}>Compile workflow <span>→</span></button>
+          <button onClick={compile} disabled={compileStatus === "loading"}>
+            {compileStatus === "loading" ? "Compiling…" : "Compile workflow"} <span>→</span>
+          </button>
         </div>
+        {warning && <p className="compile-warning">{warning}</p>}
       </section>
 
       <section className="workspace">
         <div className="canvas-panel">
           <div className="panel-heading">
             <div><span className="kicker">Workflow</span><h2>{spec.name}</h2></div>
-            <span className="saved">Compiled</span>
+            <span className="saved">{compileStatus === "fallback" ? "Fallback" : "Compiled"}</span>
           </div>
-          <div className="workflow-canvas">
-            {spec.steps.map((step, index) => (
-              <div className="step-row" key={step.id}>
-                <article className={`node node-${step.kind}`}>
-                  <span className="node-kind">{step.kind}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.description}</p>
-                </article>
-                {index < spec.steps.length - 1 && <div className="connector">↓</div>}
-              </div>
-            ))}
-          </div>
+          <WorkflowCanvas spec={spec} />
         </div>
 
         <aside className="operation-panel">
@@ -72,33 +80,20 @@ export default function App() {
           {activeTab === "form" && (
             <div className="tab-content">
               <span className="kicker">Generated UI</span>
-              <h2>Submit an expense</h2>
+              <h2>{spec.form.title}</h2>
               <p className="muted">This form comes from the workflow spec.</p>
-              <form onSubmit={submitExpense}>
-                <label>Employee<input name="employee" defaultValue="Oussama" required /></label>
-                <label>Receipt<input name="receipt" type="file" required /></label>
-                <div className="field-row">
-                  <label>Merchant<input name="merchant" defaultValue="Acme Hotel" required /></label>
-                  <label>Amount<input name="amount" type="number" defaultValue="640" min="0" step="0.01" required /></label>
-                </div>
-                <button className="primary" type="submit">Start run</button>
-              </form>
+              <GeneratedForm spec={spec} disabled={compileStatus === "loading"} onSubmit={submitExpense} />
             </div>
           )}
 
           {activeTab === "trace" && (
             <div className="tab-content">
               <span className="kicker">Run trace</span>
-              <h2>{trace.length ? "Latest execution" : "No runs yet"}</h2>
-              {!trace.length && <p className="empty">Submit the generated form to see every step and its output.</p>}
-              <ol className="trace-list">
-                {trace.map((event) => (
-                  <li key={event.stepId} className={event.status}>
-                    <span className="trace-dot" />
-                    <div><strong>{event.title}</strong><p>{event.detail}</p><small>{event.status}</small></div>
-                  </li>
-                ))}
-              </ol>
+              <h2>{run ? "Latest execution" : "No runs yet"}</h2>
+              <TracePanel
+                run={run}
+                onDecision={(decision) => setRun((current) => current ? decideRun(spec, current, decision) : current)}
+              />
             </div>
           )}
 

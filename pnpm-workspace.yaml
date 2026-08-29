@@ -1,0 +1,3 @@
+# pnpm 11 stores dependency build permissions here, including for one-package repos.
+allowBuilds:
+  esbuild: true
