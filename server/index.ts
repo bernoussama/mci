@@ -4,5 +4,5 @@ import { app } from "./app";
 const port = Number(process.env.API_PORT ?? 8787);
 
 serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`MCI server listening on http://localhost:${info.port}`);
+  console.log(`TraceFlow server listening on http://localhost:${info.port}`);
 });

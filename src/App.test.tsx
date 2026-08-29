@@ -31,7 +31,7 @@ describe("App demo journey", () => {
   it("lets users skip discovery and enter their own prompt", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: "Skip to prompt" }));
-    expect(screen.getByRole("heading", { name: /MCI builds the workflow/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /TraceFlow builds the workflow/ })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Generate workflow" }));
     expect(screen.getByText("Demo workflow loaded. No network required.")).toBeInTheDocument();
   });

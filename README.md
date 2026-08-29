@@ -1,6 +1,6 @@
-# MCI
+# TraceFlow
 
-MCI is a starter for prompt-built business workflows. A user describes a process, the compiler returns a declarative workflow spec, and the product derives both the operational UI and execution trace from that spec.
+TraceFlow is a starter for prompt-built business workflows. A user describes a process, the compiler returns a declarative workflow spec, and the product derives both the operational UI and execution trace from that spec.
 
 The included expense approval demo covers one complete path:
 

@@ -67,7 +67,7 @@ export function BusinessOnboarding({ onBuild, onSkip }: BusinessOnboardingProps)
   return (
     <main className="onboarding-screen">
       <header className="onboarding-nav">
-        <a className="brand" href="/">MCI</a>
+        <a className="brand" href="/">TraceFlow</a>
         <button type="button" className="onboarding-skip" onClick={onSkip}>Skip to prompt</button>
       </header>
 

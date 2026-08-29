@@ -40,7 +40,7 @@ export default function App() {
     return (
       <main className="prompt-screen">
         <header className="landing-nav">
-          <a className="brand" href="/">MCI</a>
+          <a className="brand" href="/">TraceFlow</a>
           <nav aria-label="Primary navigation">
             <a href="#prompt">Build</a>
             <a href="#prompt">Examples</a>
@@ -51,7 +51,7 @@ export default function App() {
         <section className="prompt-stage" id="prompt">
           <div className="prompt-intro">
             <p className="eyebrow">Operational software from one prompt</p>
-            <h1>Describe the process.<br />MCI builds the workflow.</h1>
+            <h1>Describe the process.<br />TraceFlow builds the workflow.</h1>
             <p>Generate the workflow, the form your team uses, and a trace for every decision.</p>
             <button type="button" className="restart-discovery" onClick={() => setEntryScreen("onboarding")}>Find automation ideas</button>
           </div>
@@ -87,7 +87,7 @@ export default function App() {
   return (
     <main className="builder-shell">
       <header className="builder-topbar">
-        <a className="brand" href="/">MCI</a>
+        <a className="brand" href="/">TraceFlow</a>
         <div className="builder-title"><strong>{spec.name}</strong><span>Workflow builder</span></div>
         <span className={`saved ${compileStatus === "loading" ? "is-loading" : ""}`}>
           {compileStatus === "loading" ? "Generating" : compileStatus === "demo" ? "Demo" : compileStatus === "fallback" ? "Fallback" : "Compiled"}
@@ -97,12 +97,12 @@ export default function App() {
       <aside className="chat-sidebar" aria-label="Workflow conversation">
         <div className="chat-heading">
           <span className="kicker">Conversation</span>
-          <h2>Build with MCI</h2>
+          <h2>Build with TraceFlow</h2>
         </div>
         <div className="chat-thread">
           <div className="chat-message user-message"><span>You</span><p>{submittedPrompt}</p></div>
           <div className="chat-message assistant-message">
-            <span>MCI</span>
+            <span>TraceFlow</span>
             <p>{compileStatus === "loading" ? "Building the workflow and its operating UI..." : warning ?? "The workflow is ready. You can run it or inspect its JSON."}</p>
           </div>
         </div>

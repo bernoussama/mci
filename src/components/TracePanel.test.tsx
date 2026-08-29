@@ -24,7 +24,7 @@ describe("TracePanel", () => {
       />,
     );
 
-    expect(screen.getByRole("region", { name: "Selected trace step" })).toHaveTextContent("MCI AI, simulated");
+    expect(screen.getByRole("region", { name: "Selected trace step" })).toHaveTextContent("TraceFlow AI, simulated");
     fireEvent.click(screen.getByRole("button", { name: /Amount checked/ }));
     expect(onSelectEvent).toHaveBeenCalledWith(run.events[2]);
     fireEvent.click(screen.getByRole("button", { name: "Approve expense" }));

@@ -1,8 +1,8 @@
-# MCI hackathon MVP plan
+# TraceFlow hackathon MVP plan
 
 ## The demo we are shipping
 
-MCI turns one business-process prompt into a workflow spec, the form people use to interact with it, and a trace of what happened during execution.
+TraceFlow turns one business-process prompt into a workflow spec, the form people use to interact with it, and a trace of what happened during execution.
 
 The one-hour demo covers one expense approval flow:
 
@@ -543,7 +543,7 @@ Before launch, the integration captain must confirm:
 
 ## Ninety-second pitch
 
-- **0:00 to 0:15:** "Automation tools build workflows, but people still need forms, approvals, and a way to understand each run. MCI derives all of them from one spec."
+- **0:00 to 0:15:** "Automation tools build workflows, but people still need forms, approvals, and a way to understand each run. TraceFlow derives all of them from one spec."
 - **0:15 to 1:00:** Compile the prompt, show the workflow and generated form, submit $640, approve it, and show the completed trace.
 - **1:00 to 1:20:** Open the JSON tab. Explain that the workflow, form, and trace share this source of truth.
 - **1:20 to 1:30:** "Next, we replace the demo adapters with durable execution and one real accounting integration."
