@@ -18,8 +18,10 @@ describe("App demo journey", () => {
 
   it("compiles, pauses a $640 expense, approves it, and completes accounting", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /Compile workflow/ }));
+    expect(screen.getByRole("heading", { name: /MCI builds the workflow/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Generate workflow" }));
     expect(await screen.findByText("Model unavailable. Using the demo workflow.")).toBeInTheDocument();
+    expect(screen.getByRole("complementary", { name: "Workflow conversation" })).toHaveTextContent("Build an expense approval workflow");
 
     fireEvent.change(screen.getByLabelText("Receipt"), {
       target: { files: [new File(["demo"], "receipt.pdf", { type: "application/pdf" })] },
@@ -36,7 +38,7 @@ describe("App demo journey", () => {
   it("uses the local workflow when the API is down", async () => {
     vi.mocked(compileWorkflow).mockRejectedValueOnce(new Error("offline"));
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /Compile workflow/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Generate workflow" }));
     expect(await screen.findByText("API unavailable. Using the local demo workflow.")).toBeInTheDocument();
     expect(screen.getByText("Fallback")).toBeInTheDocument();
   });

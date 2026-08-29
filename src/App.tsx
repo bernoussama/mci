@@ -17,9 +17,11 @@ export default function App() {
   const [warning, setWarning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [submittedPrompt, setSubmittedPrompt] = useState(defaultPrompt);
   const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
   async function compile() {
+    setSubmittedPrompt(prompt);
     setCompileStatus("loading");
     setWarning(null);
     setRun(null);
@@ -40,6 +42,36 @@ export default function App() {
     }
   }
 
+  if (compileStatus === "idle") {
+    return (
+      <main className="prompt-screen">
+        <header className="landing-nav">
+          <a className="brand" href="/">MCI</a>
+          <nav aria-label="Primary navigation">
+            <a href="#prompt">Build</a>
+            <a href="#prompt">Examples</a>
+            <a href="#prompt">How it works</a>
+          </nav>
+          <span className="landing-badge">Local prototype</span>
+        </header>
+        <section className="prompt-stage" id="prompt">
+          <div className="prompt-intro">
+            <p className="eyebrow">Operational software from one prompt</p>
+            <h1>Describe the process.<br />MCI builds the workflow.</h1>
+            <p>Generate the workflow, the form your team uses, and a trace for every decision.</p>
+          </div>
+          <div className="landing-prompt">
+            <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Workflow prompt" />
+            <div className="landing-prompt-footer">
+              <span>Expense approval workflow</span>
+              <button onClick={compile}>Generate workflow</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   function submitExpense(input: WorkflowSubmission) {
     const nextRun = startRun(spec, input);
     setRun(nextRun);
@@ -58,29 +90,38 @@ export default function App() {
   }
 
   return (
-    <main>
-      <header className="topbar">
+    <main className="builder-shell">
+      <header className="builder-topbar">
         <a className="brand" href="/">MCI</a>
-        <span className="status"><i /> Local prototype</span>
+        <div className="builder-title"><strong>{spec.name}</strong><span>Workflow builder</span></div>
+        <span className={`saved ${compileStatus === "loading" ? "is-loading" : ""}`}>
+          {compileStatus === "loading" ? "Generating" : compileStatus === "fallback" ? "Fallback" : "Compiled"}
+        </span>
       </header>
 
-      <section className="hero">
-        <p className="eyebrow">Workflow compiler</p>
-        <h1>Describe the process.<br />Get the workflow and its UI.</h1>
-        <div className="prompt-box">
-          <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Workflow prompt" />
-          <button onClick={compile} disabled={compileStatus === "loading"}>
-            {compileStatus === "loading" ? "Compiling…" : "Compile workflow"} <span>→</span>
-          </button>
+      <aside className="chat-sidebar" aria-label="Workflow conversation">
+        <div className="chat-heading">
+          <span className="kicker">Conversation</span>
+          <h2>Build with MCI</h2>
         </div>
-        {warning && <p className="compile-warning">{warning}</p>}
-      </section>
+        <div className="chat-thread">
+          <div className="chat-message user-message"><span>You</span><p>{submittedPrompt}</p></div>
+          <div className="chat-message assistant-message">
+            <span>MCI</span>
+            <p>{compileStatus === "loading" ? "Building the workflow and its operating UI..." : warning ?? "The workflow is ready. You can run it or inspect its JSON."}</p>
+          </div>
+        </div>
+        <div className="chat-compose">
+          <textarea value={prompt} onChange={(event) => setPrompt(event.target.value)} aria-label="Refine workflow prompt" />
+          <button onClick={compile} disabled={compileStatus === "loading"}>{compileStatus === "loading" ? "Working..." : "Send update"}</button>
+        </div>
+      </aside>
 
-      <section className="workspace">
+      <section className="builder-workspace">
         <div className="canvas-panel">
           <div className="panel-heading">
             <div><span className="kicker">Workflow</span><h2>{spec.name}</h2></div>
-            <span className="saved">{compileStatus === "fallback" ? "Fallback" : "Compiled"}</span>
+            <span className="canvas-count">{spec.steps.length} steps</span>
           </div>
           <WorkflowCanvas
             spec={spec}
