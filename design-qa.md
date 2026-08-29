@@ -1,41 +1,36 @@
 # Design QA
 
-- Source visual truth: `/tmp/codex-clipboard-c3efda8d-e0d2-4a90-a198-40da1956fffd.png`
-- Source dimensions: 750 x 412 pixels
-- Intended implementation capture: `landing-implementation.png`
+- Inspiration source: `/tmp/codex-clipboard-a0f6b0d8-d671-498d-81df-4f8c910c0e7d.png`
+- Source dimensions: 3840 x 2160 pixels
+- Implementation captures: `outputs/mci-onboarding-blue.png`, `outputs/mci-prompt-blue.png`, and `outputs/mci-workflow-blue.png`
+- Combined comparison: `outputs/design-comparison.png`
 - Browser viewport: 1280 x 720 CSS pixels at device scale 1
-- State: initial prompt screen, before workflow generation
-- Browser evidence: the rendered DOM loaded, reported 1280 x 720 with no horizontal or vertical overflow, and exposed the expected prompt-first controls.
-- Interaction evidence: the Vitest app journey covers prompt submission, the switch to the builder, form submission, approval, and accounting completion.
+- States checked: onboarding, prompt landing, and generated workflow builder
 
-**Findings**
+## Intent
 
-- [P1] Rendered screenshot unavailable
-  Location: local in-app browser capture.
-  Evidence: the source image opened successfully and the implementation DOM loaded, but repeated browser screenshot calls returned `Unable to capture screenshot`.
-  Impact: typography, spacing, colors, asset quality, and overall visual fidelity cannot be compared from the same visual input.
-  Fix: recapture the landing and builder screens when the browser capture channel is working, then compare them beside the source image.
+Use the reference only for its cool blue atmosphere and translucent-light mood. Do not reproduce its framed panel, floating rectangles, dotted corners, cloud placement, or source bitmap.
 
-**Required fidelity surfaces**
+## Findings
 
-- Fonts and typography: blocked pending rendered capture.
-- Spacing and layout rhythm: viewport geometry passed, visual comparison blocked.
-- Colors and visual tokens: blocked pending rendered capture.
-- Image quality and asset fidelity: the generated raster backdrop is present, visual comparison blocked.
-- Copy and content: DOM inspection confirms the requested prompt-first story and builder labels.
+- No P0, P1, or P2 visual issues found.
+- The new MCI backdrop uses an original arctic horizon, asymmetric glass-like flow, and stronger navy contrast.
+- The copied reference asset was removed and is no longer consumed by the application.
+- The onboarding card remains readable over both bright and dark parts of the artwork.
+- The prompt landing preserves a clear headline-to-input hierarchy at 1280 x 720.
+- The workflow builder remains a quiet, functional three-column workspace and does not reuse the atmospheric backdrop where it would hurt legibility.
 
-**Comparison history**
+## Interaction evidence
 
-- Initial pass: blocked because no browser-rendered screenshot could be captured. No visual fixes were claimed from incomplete evidence.
+- `Skip to prompt` transitioned from onboarding to the prompt landing.
+- `Generate workflow` transitioned from the landing to the generated expense workflow.
+- The builder rendered the conversation, five workflow steps, generated form, and run action.
 
-**Implementation checklist**
+## Automated verification
 
-- Capture the initial prompt screen at 1280 x 720.
-- Submit the prompt and capture the builder state at the same viewport.
-- Compare both captures with the supplied reference and resolve any P0, P1, or P2 mismatch.
+- Vitest: 8 files and 24 tests passed.
+- ESLint: passed.
+- TypeScript and Vite production build: passed.
+- `git diff --check`: passed.
 
-**Follow-up polish**
-
-- Check the headline optical weight and prompt-card vertical position against the source once capture works.
-
-final result: blocked
+final result: passed
