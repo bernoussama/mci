@@ -1,29 +1,47 @@
 import { FormEvent, useState } from "react";
-import { executeExpenseWorkflow, expenseWorkflow, TraceEvent } from "./domain/workflow";
+import { decideRun, expenseWorkflow, startRun, WorkflowRun } from "./domain/workflow";
+import { TracePanel } from "./components/TracePanel";
 import "./styles.css";
 
 const defaultPrompt = "Build an expense approval workflow. Employees submit a receipt. Read the merchant and amount. Expenses above $500 need manager approval.";
 
 export default function App() {
   const [prompt, setPrompt] = useState(defaultPrompt);
-  const [trace, setTrace] = useState<TraceEvent[]>([]);
+  const [run, setRun] = useState<WorkflowRun | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const spec = expenseWorkflow;
+  const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
   function compile() {
-    setTrace([]);
+    setRun(null);
+    setSelectedEventId(null);
     setActiveTab("form");
   }
 
   function submitExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    setTrace(executeExpenseWorkflow(spec, {
+    const receipt = data.get("receipt");
+    const nextRun = startRun(spec, {
       employee: String(data.get("employee")),
+      receipt: receipt instanceof File ? receipt.name : "",
       merchant: String(data.get("merchant")),
       amount: Number(data.get("amount")),
-    }));
+    });
+    setRun(nextRun);
+    setSelectedEventId(nextRun.events.at(-1)?.id ?? null);
     setActiveTab("trace");
+  }
+
+  function decide(decision: "approve" | "reject") {
+    setRun((current) => {
+      if (!current) return current;
+      const nextRun = decideRun(spec, current, decision);
+      const approval = nextRun.events.find((event) => event.stepId === "approve");
+      setSelectedEventId(approval?.id ?? null);
+      return nextRun;
+    });
   }
 
   return (
@@ -51,11 +69,15 @@ export default function App() {
           <div className="workflow-canvas">
             {spec.steps.map((step, index) => (
               <div className="step-row" key={step.id}>
-                <article className={`node node-${step.kind}`}>
+                <button
+                  className={`node node-${step.kind} ${selectedEvent?.stepId === step.id ? "node-active" : ""}`}
+                  onClick={() => setSelectedEventId(run?.events.find((event) => event.stepId === step.id)?.id ?? null)}
+                  type="button"
+                >
                   <span className="node-kind">{step.kind}</span>
                   <h3>{step.title}</h3>
                   <p>{step.description}</p>
-                </article>
+                </button>
                 {index < spec.steps.length - 1 && <div className="connector">↓</div>}
               </div>
             ))}
@@ -87,19 +109,12 @@ export default function App() {
           )}
 
           {activeTab === "trace" && (
-            <div className="tab-content">
-              <span className="kicker">Run trace</span>
-              <h2>{trace.length ? "Latest execution" : "No runs yet"}</h2>
-              {!trace.length && <p className="empty">Submit the generated form to see every step and its output.</p>}
-              <ol className="trace-list">
-                {trace.map((event) => (
-                  <li key={event.stepId} className={event.status}>
-                    <span className="trace-dot" />
-                    <div><strong>{event.title}</strong><p>{event.detail}</p><small>{event.status}</small></div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            <TracePanel
+              run={run}
+              selectedEventId={selectedEventId}
+              onSelectEvent={(event) => setSelectedEventId(event.id)}
+              onDecision={decide}
+            />
           )}
 
           {activeTab === "json" && (
