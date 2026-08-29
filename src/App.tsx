@@ -21,6 +21,11 @@ export default function App() {
   const [entryScreen, setEntryScreen] = useState<"onboarding" | "prompt">("onboarding");
   const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
+  function chooseWorkflow(prompt: string) {
+    setPrompt(prompt);
+    setEntryScreen("prompt");
+  }
+
   function compile(nextPrompt = prompt) {
     setPrompt(nextPrompt);
     setSubmittedPrompt(nextPrompt);
@@ -33,7 +38,7 @@ export default function App() {
   }
 
   if (compileStatus === "idle" && entryScreen === "onboarding") {
-    return <BusinessOnboarding onBuild={compile} onSkip={() => setEntryScreen("prompt")} />;
+    return <BusinessOnboarding onChooseWorkflow={chooseWorkflow} onSkip={() => setEntryScreen("prompt")} />;
   }
 
   if (compileStatus === "idle") {

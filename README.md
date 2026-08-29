@@ -10,7 +10,7 @@ The included expense approval demo covers one complete path:
 4. Smaller expenses go straight to accounting.
 5. The run trace records each decision.
 
-The compiler uses structured model output when an OpenAI key is configured and falls back to the checked-in workflow when it is not. Receipt extraction and the accounting handoff remain visibly simulated.
+Business discovery uses GPT-5.6 Luna to assess each answer, ask the next question, and suggest workflows after no more than five answers. The compiler also uses structured model output. Both paths have deterministic fallbacks, while receipt extraction and the accounting handoff remain visibly simulated.
 
 ## Run it
 
@@ -22,7 +22,14 @@ pnpm dev
 
 Open `http://localhost:5173`.
 
-Set `OPENAI_API_KEY` in `.env.local` to use the model compiler. Without it, the API returns the checked-in expense workflow so the demo still runs.
+Put your API key in `.env.local`:
+
+```dotenv
+OPENAI_API_KEY=your_key_here
+DISCOVERY_MODEL=gpt-5.6-luna
+```
+
+Never prefix this variable with `VITE_`. The Hono server reads the key and the browser never receives it. Without a key, discovery uses fixed follow-up questions and the compiler returns the checked-in expense workflow so the demo still runs.
 
 To test the production-shaped local server:
 
@@ -44,7 +51,7 @@ pnpm build
 ## Project shape
 
 ```text
-server/                   local Hono API and model compiler
+server/                   local Hono API, discovery agent, and model compiler
 shared/                   Zod contracts shared by browser and server
 src/
 ├── components/           canvas, generated form, and trace UI

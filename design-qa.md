@@ -5,7 +5,7 @@
 - Implementation captures: `outputs/mci-onboarding-blue.png`, `outputs/mci-prompt-blue.png`, and `outputs/mci-workflow-blue.png`
 - Combined comparison: `outputs/design-comparison.png`
 - Browser viewport: 1280 x 720 CSS pixels at device scale 1
-- States checked: onboarding, prompt landing, and generated workflow builder
+- States checked: adaptive onboarding, prompt landing, and generated workflow builder
 
 ## Intent
 
@@ -23,6 +23,8 @@ Use the reference only for its cool blue atmosphere and translucent-light mood. 
 ## Interaction evidence
 
 - `Skip to prompt` transitioned from onboarding to the prompt landing.
+- Each discovery answer is assessed before the UI renders the next model-generated question.
+- Discovery stops after at most five answers and renders workflow suggestion cards.
 - `Generate workflow` transitioned from the landing to the generated expense workflow.
 - The builder rendered the conversation, five workflow steps, generated form, and run action.
 
