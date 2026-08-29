@@ -1,5 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { generateText, Output } from "ai";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   DiscoveryDecisionSchema,
   MAX_DISCOVERY_QUESTIONS,
@@ -7,6 +9,11 @@ import {
   type DiscoveryResponse,
   type DiscoveryTurn,
 } from "../shared/discovery-schema";
+
+const discoveryWritingSkill = readFileSync(
+  resolve(process.cwd(), ".agents/skills/traceflow-discovery-writing/SKILL.md"),
+  "utf8",
+).replace(/^---[\s\S]*?---\s*/, "").trim();
 
 export const DISCOVERY_AGENT_PROMPT = `
 You are TraceFlow's business process discovery agent. Your job is to understand a business well enough to suggest useful workflow automations.
@@ -21,6 +28,10 @@ After each answer:
 Questions should uncover repeated work, triggers, actors, handoffs, decisions, exceptions, inputs, outputs, and the cost of failure. Do not ask for secrets, credentials, personal data, or information the user already supplied. Prefer plain language over automation jargon.
 
 Each workflow suggestion needs a short title, a one-sentence description, and a self-contained prompt that a workflow compiler can use. The prompt must name the trigger, required inputs, steps, decisions, human approvals, and final outcome when those details are known. Do not invent software integrations.
+
+Apply this TraceFlow writing skill to every user-visible string:
+
+${discoveryWritingSkill}
 `.trim();
 
 export type GenerateDiscoveryInput = {

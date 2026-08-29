@@ -1,0 +1,4 @@
+interface:
+  display_name: "TraceFlow discovery writing"
+  short_description: "Write concise business discovery questions and workflow ideas"
+  default_prompt: "Apply TraceFlow discovery writing rules to this agent response."

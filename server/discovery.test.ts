@@ -98,3 +98,11 @@ describe("assessBusinessDiscovery", () => {
     expect(generateDecision).not.toHaveBeenCalled();
   });
 });
+
+describe("discovery writing skill", () => {
+  it("loads the project skill into the agent prompt", () => {
+    expect(DISCOVERY_AGENT_PROMPT).toContain("Ask exactly one question at a time");
+    expect(DISCOVERY_AGENT_PROMPT).toContain("Keep it under 25 words");
+    expect(DISCOVERY_AGENT_PROMPT).toContain("not a chatbot or sales page");
+  });
+});
