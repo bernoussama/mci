@@ -5,75 +5,64 @@ type BusinessOnboardingProps = {
   onSkip(): void;
 };
 
-type Answer = {
-  id: string;
-  label: string;
-  detail: string;
-};
-
-const businessTypes: Answer[] = [
-  { id: "software", label: "Software", detail: "SaaS, apps, and technology services" },
-  { id: "services", label: "Professional services", detail: "Agencies, consulting, and legal work" },
-  { id: "commerce", label: "Commerce", detail: "Retail, ecommerce, and distribution" },
-  { id: "nonprofit", label: "Nonprofit", detail: "Associations, charities, and community teams" },
-];
-
-const teamSizes: Answer[] = [
-  { id: "small", label: "1-10 people", detail: "A small team wearing several hats" },
-  { id: "growing", label: "11-50 people", detail: "A growing team adding process" },
-  { id: "established", label: "51+ people", detail: "Several teams and approval layers" },
-];
-
-const bottlenecks: Answer[] = [
-  { id: "approvals", label: "Approvals wait too long", detail: "Requests sit in chat or email" },
-  { id: "data-entry", label: "People retype information", detail: "Documents and forms create copy-paste work" },
-  { id: "handoffs", label: "Customer handoffs get lost", detail: "Ownership is unclear between teams" },
-  { id: "reporting", label: "Reports take hours", detail: "Updates are collected and formatted by hand" },
-];
-
-const opportunityByBottleneck: Record<string, { title: string; description: string }> = {
-  approvals: { title: "Purchase request routing", description: "Collect requests, apply policy, and route exceptions to the right owner." },
-  "data-entry": { title: "Document data capture", description: "Extract structured fields from documents before a person reviews them." },
+const opportunities = {
+  approvals: { title: "Request and approval routing", description: "Collect requests, apply policy, and route exceptions to the right owner." },
+  documents: { title: "Document data capture", description: "Extract structured fields from documents before a person reviews them." },
   handoffs: { title: "Customer request triage", description: "Classify incoming requests and assign an accountable owner." },
   reporting: { title: "Recurring report assembly", description: "Gather team updates and produce a consistent report." },
+  general: { title: "Process intake and routing", description: "Turn an informal request into a tracked process with a clear next owner." },
 };
 
-function OptionList({ options, onChoose }: { options: Answer[]; onChoose(answer: Answer): void }) {
+function findOpportunity(text: string) {
+  const answer = text.toLowerCase();
+  if (/approv|sign.?off|permission|waiting/.test(answer)) return opportunities.approvals;
+  if (/document|invoice|copy|paste|data entry|retype|extract/.test(answer)) return opportunities.documents;
+  if (/customer|handoff|assign|owner|lost/.test(answer)) return opportunities.handoffs;
+  if (/report|spreadsheet|status|update|dashboard/.test(answer)) return opportunities.reporting;
+  return opportunities.general;
+}
+
+type WrittenAnswerProps = {
+  value: string;
+  label: string;
+  placeholder: string;
+  onChange(value: string): void;
+  onContinue(): void;
+};
+
+function WrittenAnswer({ value, label, placeholder, onChange, onContinue }: WrittenAnswerProps) {
   return (
-    <div className="onboarding-options">
-      {options.map((option) => (
-        <button key={option.id} type="button" className="onboarding-option" onClick={() => onChoose(option)}>
-          <strong>{option.label}</strong>
-          <span>{option.detail}</span>
-        </button>
-      ))}
+    <div className="written-answer">
+      <label htmlFor="discovery-answer">Your answer</label>
+      <textarea
+        id="discovery-answer"
+        aria-label={label}
+        value={value}
+        placeholder={placeholder}
+        onChange={(event) => onChange(event.target.value)}
+        autoFocus
+      />
+      <div className="written-answer-footer">
+        <span>A few honest sentences work best.</span>
+        <button type="button" disabled={!value.trim()} onClick={onContinue}>Continue</button>
+      </div>
     </div>
   );
 }
 
 export function BusinessOnboarding({ onBuild, onSkip }: BusinessOnboardingProps) {
   const [step, setStep] = useState(0);
-  const [business, setBusiness] = useState<Answer | null>(null);
-  const [teamSize, setTeamSize] = useState<Answer | null>(null);
-  const [bottleneck, setBottleneck] = useState<Answer | null>(null);
+  const [business, setBusiness] = useState("");
+  const [repetitiveWork, setRepetitiveWork] = useState("");
+  const [bottleneck, setBottleneck] = useState("");
 
-  function chooseBusiness(answer: Answer) {
-    setBusiness(answer);
-    setStep(1);
-  }
-
-  function chooseTeamSize(answer: Answer) {
-    setTeamSize(answer);
-    setStep(2);
-  }
-
-  function chooseBottleneck(answer: Answer) {
-    setBottleneck(answer);
-    setStep(3);
-  }
-
-  const expensePrompt = `Build an expense approval workflow for a ${business?.label.toLowerCase() ?? "growing"} business with ${teamSize?.label.toLowerCase() ?? "a small team"}. Employees submit a receipt. Read the merchant and amount. Expenses above $500 need manager approval.`;
-  const discoveredOpportunity = bottleneck ? opportunityByBottleneck[bottleneck.id] : null;
+  const discoveredOpportunity = findOpportunity(`${repetitiveWork} ${bottleneck}`);
+  const expensePrompt = [
+    `Build an expense approval workflow for this business: ${business.trim()}.`,
+    `Their team described this repetitive work: ${repetitiveWork.trim()}.`,
+    `Their main bottleneck is: ${bottleneck.trim()}.`,
+    "Employees submit a receipt. Read the merchant and amount. Expenses above $500 need manager approval.",
+  ].join(" ");
 
   return (
     <main className="onboarding-screen">
@@ -94,27 +83,45 @@ export function BusinessOnboarding({ onBuild, onSkip }: BusinessOnboardingProps)
             {step === 0 && (
               <>
                 <p className="eyebrow">Start with your business</p>
-                <h1>What kind of business do you run?</h1>
-                <p className="onboarding-lead">This helps MCI suggest work that is worth automating first.</p>
-                <OptionList options={businessTypes} onChoose={chooseBusiness} />
+                <h1>Tell us what your business does.</h1>
+                <p className="onboarding-lead">Who do you help, what do you sell, and how big is the team doing the work?</p>
+                <WrittenAnswer
+                  label="Business description"
+                  value={business}
+                  placeholder="We run a 12-person property management company. We look after 80 rental homes for owners in Casablanca."
+                  onChange={setBusiness}
+                  onContinue={() => setStep(1)}
+                />
               </>
             )}
 
             {step === 1 && (
               <>
-                <p className="eyebrow">Team shape</p>
-                <h1>How many people handle the work?</h1>
-                <p className="onboarding-lead">Team size changes where approvals and handoffs start to hurt.</p>
-                <OptionList options={teamSizes} onChoose={chooseTeamSize} />
+                <p className="eyebrow">Follow the work</p>
+                <h1>What work keeps repeating?</h1>
+                <p className="onboarding-lead">Describe something your team handles again and again. Tell us how it works today.</p>
+                <WrittenAnswer
+                  label="Repetitive work"
+                  value={repetitiveWork}
+                  placeholder="Tenants email maintenance requests. Someone copies each request into a spreadsheet, finds a contractor, and sends status updates."
+                  onChange={setRepetitiveWork}
+                  onContinue={() => setStep(2)}
+                />
               </>
             )}
 
             {step === 2 && (
               <>
-                <p className="eyebrow">Find the bottleneck</p>
-                <h1>Where does work slow down most?</h1>
-                <p className="onboarding-lead">Pick the problem your team complains about repeatedly.</p>
-                <OptionList options={bottlenecks} onChoose={chooseBottleneck} />
+                <p className="eyebrow">Find the friction</p>
+                <h1>Where does it slow down or go wrong?</h1>
+                <p className="onboarding-lead">Mention waiting, copy-paste work, lost handoffs, mistakes, or anything people complain about.</p>
+                <WrittenAnswer
+                  label="Workflow bottleneck"
+                  value={bottleneck}
+                  placeholder="Requests get lost in the inbox. Owners wait for approval, and tenants have no idea when someone is coming."
+                  onChange={setBottleneck}
+                  onContinue={() => setStep(3)}
+                />
               </>
             )}
 
@@ -122,11 +129,17 @@ export function BusinessOnboarding({ onBuild, onSkip }: BusinessOnboardingProps)
           </div>
         )}
 
-        {step === 3 && discoveredOpportunity && (
+        {step === 3 && (
           <div className="onboarding-card onboarding-results">
             <p className="eyebrow">Your automation shortlist</p>
             <h1>Start with one process.</h1>
-            <p className="onboarding-lead">Based on a {business?.label.toLowerCase()} team of {teamSize?.label.toLowerCase()}, these are worth investigating.</p>
+            <p className="onboarding-lead">We used your description to find a useful first automation.</p>
+
+            <dl className="discovery-summary">
+              <div><dt>Your business</dt><dd>{business}</dd></div>
+              <div><dt>Repeated work</dt><dd>{repetitiveWork}</dd></div>
+              <div><dt>Main friction</dt><dd>{bottleneck}</dd></div>
+            </dl>
 
             <div className="automation-shortlist">
               <article className="automation-idea discovered-idea">

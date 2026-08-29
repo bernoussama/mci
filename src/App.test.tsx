@@ -5,9 +5,12 @@ import App from "./App";
 describe("App demo journey", () => {
   it("loads the hardcoded demo, pauses a $640 expense, approves it, and completes accounting", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /Professional services/ }));
-    fireEvent.click(screen.getByRole("button", { name: /11-50 people/ }));
-    fireEvent.click(screen.getByRole("button", { name: /Approvals wait too long/ }));
+    fireEvent.change(screen.getByLabelText("Business description"), { target: { value: "A professional services business with 11-50 people" } });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.change(screen.getByLabelText("Repetitive work"), { target: { value: "The team reviews employee expenses every week" } });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
+    fireEvent.change(screen.getByLabelText("Workflow bottleneck"), { target: { value: "Approvals wait too long in email" } });
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     fireEvent.click(screen.getByRole("button", { name: "Build this workflow" }));
 
     expect(screen.getByText("Demo workflow loaded. No network required.")).toBeInTheDocument();
