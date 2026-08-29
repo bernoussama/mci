@@ -7,10 +7,12 @@ const draft: WorkflowDraft = {
   description: "Approve large expenses.",
   formTitle: "Submit an expense",
   fields: [
+    { id: "employee", label: "Employee", type: "text", required: true },
     { id: "receipt", label: "Receipt", type: "file", required: true },
+    { id: "merchant", label: "Merchant", type: "text", required: true },
     { id: "amount", label: "Amount", type: "number", required: true },
   ],
-  extraction: { sourceFieldId: "receipt", outputFieldIds: ["amount"] },
+  extraction: { sourceFieldId: "receipt", outputFieldIds: ["merchant", "amount"] },
   approval: { fieldId: "amount", operator: "greater_than", threshold: 500, approverRole: "manager" },
   destination: "accounting",
 };

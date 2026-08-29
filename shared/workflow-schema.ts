@@ -1,28 +1,31 @@
 import { z } from "zod";
 
-const fieldId = z.string().regex(/^[a-z][a-z0-9_]*$/).max(48);
+const fieldId = z.string()
+  .regex(/^[a-z][a-z0-9_]*$/)
+  .max(48)
+  .describe("Stable lowercase identifier using letters, numbers, and underscores.");
 
 export const WorkflowFieldSchema = z.object({
-  id: fieldId,
-  label: z.string().trim().min(1).max(80),
-  type: z.enum(["text", "number", "file"]),
-  required: z.boolean(),
+  id: fieldId.describe("Field ID. Use employee, receipt, merchant, or amount."),
+  label: z.string().trim().min(1).max(80).describe("Short label shown above the form input."),
+  type: z.enum(["text", "number", "file"]).describe("HTML input type supported by the generated form."),
+  required: z.boolean().describe("Whether the employee must provide this field."),
 }).strict();
 
 export const WorkflowDraftSchema = z.object({
-  name: z.string().trim().min(1).max(80),
-  description: z.string().trim().min(1).max(240),
-  formTitle: z.string().trim().min(1).max(80),
-  fields: z.array(WorkflowFieldSchema).min(1).max(12),
+  name: z.string().trim().min(1).max(80).describe("Short workflow name."),
+  description: z.string().trim().min(1).max(240).describe("One sentence explaining the expense approval rule."),
+  formTitle: z.string().trim().min(1).max(80).describe("Short title for the employee expense form."),
+  fields: z.array(WorkflowFieldSchema).length(4).describe("Exactly the four required expense fields."),
   extraction: z.object({
-    sourceFieldId: fieldId,
-    outputFieldIds: z.array(fieldId).min(1).max(8),
+    sourceFieldId: fieldId.describe("Must be receipt."),
+    outputFieldIds: z.array(fieldId).length(2).describe("Must contain merchant and amount."),
   }).strict(),
   approval: z.object({
-    fieldId,
+    fieldId: fieldId.describe("Must be amount."),
     operator: z.literal("greater_than"),
-    threshold: z.number().finite().nonnegative().max(1_000_000),
-    approverRole: z.string().trim().min(1).max(48),
+    threshold: z.number().finite().nonnegative().max(1_000_000).describe("Numeric amount copied from the prompt, or 500 by default."),
+    approverRole: z.string().trim().min(1).max(48).describe("Role that approves large expenses, or manager by default."),
   }).strict(),
   destination: z.literal("accounting"),
 }).strict();
