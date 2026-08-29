@@ -14,8 +14,8 @@ Use the reference only for its cool blue atmosphere and translucent-light mood. 
 ## Findings
 
 - No P0, P1, or P2 visual issues found.
-- The new MCI backdrop uses an original arctic horizon, asymmetric glass-like flow, and stronger navy contrast.
-- The copied reference asset was removed and is no longer consumed by the application.
+- Both entry screens use a plain `#edf3f9` background with no decorative image.
+- The copied reference and generated backdrop assets were removed and are no longer consumed by the application.
 - The onboarding card remains readable over both bright and dark parts of the artwork.
 - The prompt landing preserves a clear headline-to-input hierarchy at 1280 x 720.
 - The workflow builder remains a quiet, functional three-column workspace and does not reuse the atmospheric backdrop where it would hurt legibility.
