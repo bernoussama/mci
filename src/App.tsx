@@ -4,7 +4,6 @@ import { GeneratedForm } from "./components/GeneratedForm";
 import { TracePanel } from "./components/TracePanel";
 import { WorkflowCanvas } from "./components/WorkflowCanvas";
 import { decideRun, startRun, type WorkflowRun, type WorkflowSubmission } from "./domain/executor";
-import { compileWorkflow } from "./services/compiler-client";
 import "./styles.css";
 
 const defaultPrompt = "Build an expense approval workflow. Employees submit a receipt. Read the merchant and amount. Expenses above $500 need manager approval.";
@@ -13,33 +12,21 @@ export default function App() {
   const [prompt, setPrompt] = useState(defaultPrompt);
   const [spec, setSpec] = useState<WorkflowSpec>(expenseWorkflow);
   const [run, setRun] = useState<WorkflowRun | null>(null);
-  const [compileStatus, setCompileStatus] = useState<"idle" | "loading" | "model" | "fallback">("idle");
+  const [compileStatus, setCompileStatus] = useState<"idle" | "loading" | "model" | "fallback" | "demo">("idle");
   const [warning, setWarning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"form" | "trace" | "json">("form");
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [submittedPrompt, setSubmittedPrompt] = useState(defaultPrompt);
   const selectedEvent = run?.events.find((event) => event.id === selectedEventId) ?? run?.events.at(-1);
 
-  async function compile() {
+  function compile() {
     setSubmittedPrompt(prompt);
-    setCompileStatus("loading");
-    setWarning(null);
+    setCompileStatus("demo");
+    setSpec(expenseWorkflow);
+    setWarning("Demo workflow loaded. No network required.");
     setRun(null);
     setSelectedEventId(null);
-
-    try {
-      const result = await compileWorkflow(prompt);
-      if (!result.ok) throw new Error(result.error.message);
-      setSpec(result.spec);
-      setCompileStatus(result.source);
-      setWarning(result.warning);
-      setActiveTab("form");
-    } catch {
-      setSpec(expenseWorkflow);
-      setCompileStatus("fallback");
-      setWarning("API unavailable. Using the local demo workflow.");
-      setActiveTab("form");
-    }
+    setActiveTab("form");
   }
 
   if (compileStatus === "idle") {
@@ -95,7 +82,7 @@ export default function App() {
         <a className="brand" href="/">MCI</a>
         <div className="builder-title"><strong>{spec.name}</strong><span>Workflow builder</span></div>
         <span className={`saved ${compileStatus === "loading" ? "is-loading" : ""}`}>
-          {compileStatus === "loading" ? "Generating" : compileStatus === "fallback" ? "Fallback" : "Compiled"}
+          {compileStatus === "loading" ? "Generating" : compileStatus === "demo" ? "Demo" : compileStatus === "fallback" ? "Fallback" : "Compiled"}
         </span>
       </header>
 
