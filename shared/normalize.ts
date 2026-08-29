@@ -23,9 +23,18 @@ export function normalizeWorkflow(input: WorkflowDraft): WorkflowSpec {
     throw new Error("Field IDs must be unique.");
   }
 
+  const requiredFieldIds = ["employee", "receipt", "merchant", "amount"];
+  if (fields.size !== requiredFieldIds.length || requiredFieldIds.some((id) => !fields.has(id))) {
+    throw new Error("The workflow must contain employee, receipt, merchant, and amount fields.");
+  }
+
   const source = fields.get(draft.extraction.sourceFieldId);
   if (!source || source.type !== "file") {
     throw new Error("The extraction source must reference a file field.");
+  }
+
+  if (draft.extraction.sourceFieldId !== "receipt") {
+    throw new Error("The extraction source must be the receipt field.");
   }
 
   for (const outputId of draft.extraction.outputFieldIds) {
@@ -34,9 +43,17 @@ export function normalizeWorkflow(input: WorkflowDraft): WorkflowSpec {
     }
   }
 
+  if (!draft.extraction.outputFieldIds.includes("merchant") || !draft.extraction.outputFieldIds.includes("amount")) {
+    throw new Error("Extraction must output merchant and amount.");
+  }
+
   const approvalField = fields.get(draft.approval.fieldId);
   if (!approvalField || approvalField.type !== "number") {
     throw new Error("The approval rule must reference a number field.");
+  }
+
+  if (draft.approval.fieldId !== "amount") {
+    throw new Error("The approval rule must reference the amount field.");
   }
 
   return WorkflowSpecSchema.parse({
